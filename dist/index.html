@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <title>Vanilla namedspaced event delegation</title>
+    <script src="/src.9caef6c7.js"></script>
+    <script src="/demo.d3b53871.js"></script>
+    <link rel="stylesheet" href="/demo.80ee2152.css">
+  <script src="/demo.80ee2152.js"></script></head>
+  <body>
+    <h1>Namespaced DOM event delegation</h1>
+    <div class="row">
+      <div class="col">
+        <div class="content">
+          <h2>Append new element</h2>
+          <button class="js-add-btn">
+            <div class="btn__label">Add a new button.btn</div>
+          </button>
+          <h2>with sub-content</h2>
+          <div class="btn-list">
+            <button class="btn">
+              <div class="btn__icon">
+                <div class="fake-icon"></div>
+              </div>
+              <div class="btn__label">My label</div>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <h2>Event logs</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>eventNamespace</th>
+              <th>delegatedTarget</th>
+              <th>originalEvent</th>
+              <th>target</th>
+            </tr>
+          </thead>
+          <tbody id="console"></tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
