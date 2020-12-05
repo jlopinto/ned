@@ -1,0 +1,17 @@
+language: node_js
+node_js:
+  - '12'
+dist: trusty
+sudo: required
+before_install:
+  - 'sysctl kernel.unprivileged_userns_clone=1'
+  - 'export DISPLAY=:99.0'
+  - 'sh -e /etc/init.d/xvfb start'
+cache:
+  directories:
+    - node_modules
+install:
+  - npm install
+  - npm run build
+  - sleep 3
+  - npm run jest
