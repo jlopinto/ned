@@ -7,7 +7,7 @@
     "serve": "parcel demo/index.html",
     "watch": "parcel watch demo/index.html src/index.ts",
     "build": "parcel build src/index.ts --out-dir dist --no-source-maps --global superEventDelegation",
-    "jest": "jest --silent --verbose",
+    "test": "jest --silent --verbose",
     "lint": "tslint --format stylish --project tsconfig.json"
   },
   "author": "",
