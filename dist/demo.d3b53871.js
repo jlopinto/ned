@@ -153,27 +153,27 @@ var enableEventDelegation = function enableEventDelegation() {
 
     var eventsMap = window["".concat(eventsMapPrefix, "eventsMap")];
 
-    var createCustomEvent = function createCustomEvent(event, eventNamespace, handler, options) {
-      var customEvent = {
-        eventNamespace: eventNamespace,
-        options: options,
-        delegatedTarget: this,
-        originalEvent: event
-      };
-      handler.call(this, customEvent);
-    };
-
     if (typeof targetSelector === "function" && handler === undefined) {
       var newHandler = targetSelector;
 
       eventsMap[eventNamespace] = function (event) {
-        createCustomEvent.call(this, event, eventNamespace, newHandler, options);
+        newHandler.call(this, {
+          eventNamespace: eventNamespace,
+          options: options,
+          delegatedTarget: this,
+          originalEvent: event
+        });
       };
     } else {
       eventsMap[eventNamespace] = function (event) {
         for (var target = event.target; target && target !== this; target = target.parentNode) {
           if (target.matches !== undefined && target.matches(targetSelector)) {
-            createCustomEvent.call(target, event, eventNamespace, handler, options);
+            handler.call(this, {
+              eventNamespace: eventNamespace,
+              options: options,
+              delegatedTarget: this,
+              originalEvent: event
+            });
             break;
           }
         }
@@ -289,7 +289,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65114" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49515" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -12,7 +12,8 @@ declare global {
 
 const enableEventDelegation = (
   eventsPrefix = "",
-  eventsMapPrefix = "_"
+  eventsMapPrefix = "_",
+  window: Window
 ): void => {
   window[`${eventsMapPrefix}eventsMap`] = [];
 
@@ -31,33 +32,17 @@ const enableEventDelegation = (
   ): HTMLElement {
     const [eventName] = eventNamespace.split(".");
     const eventsMap = window[`${eventsMapPrefix}eventsMap`];
-    const createCustomEvent = function (
-      this: HTMLElement,
-      event: Event,
-      eventNamespace: string,
-      handler: Function,
-      options: { once: boolean }
-    ) {
-      const customEvent = {
-        eventNamespace,
-        options,
-        delegatedTarget: this,
-        originalEvent: event,
-      };
-      handler.call(this, customEvent);
-    };
 
     if (typeof targetSelector === "function" && handler === undefined) {
-      const newHandler = targetSelector;
+      const newHandler:Function = targetSelector;
 
       eventsMap[eventNamespace] = function (event: any) {
-        createCustomEvent.call(
-          this,
-          event,
+        newHandler.call(this, {
           eventNamespace,
-          newHandler,
-          options
-        );
+          options,
+          delegatedTarget: this,
+          originalEvent: event,
+        });
       };
     } else {
       eventsMap[eventNamespace] = function (event: any) {
@@ -67,13 +52,12 @@ const enableEventDelegation = (
           target = target.parentNode
         ) {
           if (target.matches !== undefined && target.matches(targetSelector)) {
-            createCustomEvent.call(
-              target,
-              event,
+            handler.call(this, {
               eventNamespace,
-              handler,
-              options
-            );
+              options,
+              delegatedTarget: this,
+              originalEvent: event,
+            });
             break;
           }
         }
