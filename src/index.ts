@@ -1,49 +1,26 @@
-declare global {
-  interface Element {
-    msMatchesSelector(selectors: string): boolean;
-  }
-  interface HTMLElement {
-    [key: string]: Function;
-  }
-  interface Window {
-    [index: string]: any;
-  }
-}
-
-/**
- * Extend HTMLElement.prototype.
- *
- * @param eventsPrefix - provide a way to customize methods names
- * @param eventsMapPrefix - provide a way to customize the events array, names.
- * @returns void
- *
- * @alpha
- */
-
 const enableEventDelegation = (
-  eventsPrefix = "",
-  eventsMapPrefix = "_"
+  eventsPrefix = '',
+  eventsMapPrefix = '_'
 ): void => {
   window[`${eventsMapPrefix}eventsMap`] = [];
 
   HTMLElement.prototype[`${eventsPrefix}on`] = function (
     eventNamespace: string,
-    targetSelector: string,
-    handler: Function,
-    options: { once: boolean }
-  ): HTMLElement {
-    const [eventName] = eventNamespace.split(".");
+    ...rest: any
+  ) {
+    const [targetSelector, handler, once = { once: false }] = rest;
+    const [eventName] = eventNamespace.split('.');
     const eventsMap = window[`${eventsMapPrefix}eventsMap`];
 
-    if (typeof targetSelector === "function" && handler === undefined) {
-      const newHandler:Function = targetSelector;
+    if (typeof targetSelector === 'function' && handler === undefined) {
+      const newHandler: Function = targetSelector;
 
       eventsMap[eventNamespace] = function (event: any) {
         newHandler.call(this, {
           eventNamespace,
-          options,
+          target: this,
           delegatedTarget: this,
-          originalEvent: event,
+          originalEvent: event
         });
       };
     } else {
@@ -55,25 +32,24 @@ const enableEventDelegation = (
         ) {
           if (target.matches !== undefined && target.matches(targetSelector)) {
             handler.call(this, {
+              target,
               eventNamespace,
-              options,
               delegatedTarget: this,
-              originalEvent: event,
+              originalEvent: event
             });
             break;
           }
         }
       };
     }
-
-    this.addEventListener(eventName, eventsMap[eventNamespace], options);
+    this.addEventListener(eventName, eventsMap[eventNamespace], once);
     return this;
   };
 
   HTMLElement.prototype[`${eventsPrefix}off`] = function (
     eventNamespace: string
-  ): HTMLElement {
-    const [eventName] = eventNamespace.split(".");
+  ) {
+    const [eventName] = eventNamespace.split('.');
     const targetedEvent = window[`${eventsMapPrefix}eventsMap`];
     this.removeEventListener(eventName, targetedEvent[eventNamespace]);
     delete targetedEvent[eventNamespace];
@@ -84,8 +60,10 @@ const enableEventDelegation = (
     eventNamespace: string,
     targetSelector: string,
     handler: Function
-  ): HTMLElement {
-    this.on(eventNamespace, targetSelector, handler, { once: true });
+  ) {
+    this[`${eventsPrefix}on`](eventNamespace, targetSelector, handler, {
+      once: true
+    });
     return this;
   };
 };

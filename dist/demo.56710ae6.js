@@ -120,50 +120,44 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 })({"../src/index.ts":[function(require,module,exports) {
 "use strict";
 
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-/**
- * Extend HTMLElement.prototype.
- *
- * @param eventsPrefix - provide a way to customize methods names
- * @param eventsMapPrefix - provide a way to customize the events array, names.
- * @returns void
- *
- * @alpha
- */
 
-var enableEventDelegation = function enableEventDelegation() {
-  var eventsPrefix = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
-  var eventsMapPrefix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "_";
-  window["".concat(eventsMapPrefix, "eventsMap")] = [];
+var enableEventDelegation = function enableEventDelegation(eventsPrefix, eventsMapPrefix) {
+  if (eventsPrefix === void 0) {
+    eventsPrefix = '';
+  }
 
-  HTMLElement.prototype["".concat(eventsPrefix, "on")] = function (eventNamespace, targetSelector, handler, options) {
-    var _eventNamespace$split = eventNamespace.split("."),
-        _eventNamespace$split2 = _slicedToArray(_eventNamespace$split, 1),
-        eventName = _eventNamespace$split2[0];
+  if (eventsMapPrefix === void 0) {
+    eventsMapPrefix = '_';
+  }
 
-    var eventsMap = window["".concat(eventsMapPrefix, "eventsMap")];
+  window[eventsMapPrefix + "eventsMap"] = [];
 
-    if (typeof targetSelector === "function" && handler === undefined) {
-      var newHandler = targetSelector;
+  HTMLElement.prototype[eventsPrefix + "on"] = function (eventNamespace) {
+    var rest = [];
+
+    for (var _i = 1; _i < arguments.length; _i++) {
+      rest[_i - 1] = arguments[_i];
+    }
+
+    var targetSelector = rest[0],
+        handler = rest[1],
+        _a = rest[2],
+        once = _a === void 0 ? {
+      once: false
+    } : _a;
+    var eventName = eventNamespace.split('.')[0];
+    var eventsMap = window[eventsMapPrefix + "eventsMap"];
+
+    if (typeof targetSelector === 'function' && handler === undefined) {
+      var newHandler_1 = targetSelector;
 
       eventsMap[eventNamespace] = function (event) {
-        newHandler.call(this, {
+        newHandler_1.call(this, {
           eventNamespace: eventNamespace,
-          options: options,
+          target: this,
           delegatedTarget: this,
           originalEvent: event
         });
@@ -173,8 +167,8 @@ var enableEventDelegation = function enableEventDelegation() {
         for (var target = event.target; target && target !== this; target = target.parentNode) {
           if (target.matches !== undefined && target.matches(targetSelector)) {
             handler.call(this, {
+              target: target,
               eventNamespace: eventNamespace,
-              options: options,
               delegatedTarget: this,
               originalEvent: event
             });
@@ -184,23 +178,20 @@ var enableEventDelegation = function enableEventDelegation() {
       };
     }
 
-    this.addEventListener(eventName, eventsMap[eventNamespace], options);
+    this.addEventListener(eventName, eventsMap[eventNamespace], once);
     return this;
   };
 
-  HTMLElement.prototype["".concat(eventsPrefix, "off")] = function (eventNamespace) {
-    var _eventNamespace$split3 = eventNamespace.split("."),
-        _eventNamespace$split4 = _slicedToArray(_eventNamespace$split3, 1),
-        eventName = _eventNamespace$split4[0];
-
-    var targetedEvent = window["".concat(eventsMapPrefix, "eventsMap")];
+  HTMLElement.prototype[eventsPrefix + "off"] = function (eventNamespace) {
+    var eventName = eventNamespace.split('.')[0];
+    var targetedEvent = window[eventsMapPrefix + "eventsMap"];
     this.removeEventListener(eventName, targetedEvent[eventNamespace]);
     delete targetedEvent[eventNamespace];
     return this;
   };
 
-  HTMLElement.prototype["".concat(eventsPrefix, "once")] = function (eventNamespace, targetSelector, handler) {
-    this.on(eventNamespace, targetSelector, handler, {
+  HTMLElement.prototype[eventsPrefix + "once"] = function (eventNamespace, targetSelector, handler) {
+    this[eventsPrefix + "on"](eventNamespace, targetSelector, handler, {
       once: true
     });
     return this;
@@ -208,12 +199,20 @@ var enableEventDelegation = function enableEventDelegation() {
 };
 
 exports.default = enableEventDelegation;
-},{}],"demo.js":[function(require,module,exports) {
+},{}],"demo.ts":[function(require,module,exports) {
 "use strict";
 
-var _index = _interopRequireDefault(require("../src/index"));
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var index_1 = __importDefault(require("../src/index"));
 
 var logEvent = function () {
   var logs = [];
@@ -222,7 +221,7 @@ var logEvent = function () {
     var consoleOuput = document.querySelector('#console');
 
     var logMarkup = function logMarkup(output) {
-      return "<tr><td>".concat(output.eventNamespace, "</td><td>").concat(output.delegatedTarget, "</td><td>").concat(output.originalEvent, "</td><td>").concat(output.target, "</td></tr>");
+      return "<tr><td>" + output.eventNamespace + "</td><td>" + output.delegatedTarget + "</td><td>" + output.originalEvent + "</td><td>" + output.target + "</td></tr>";
     };
 
     var revertlogs = logs;
@@ -234,35 +233,35 @@ var logEvent = function () {
   return function (event, target) {
     logs.push({
       eventNamespace: event.eventNamespace,
-      delegatedTarget: "".concat(event.delegatedTarget.tagName.toLocaleLowerCase(), ".").concat(event.delegatedTarget.classList.toString().replace(" ", ".")),
-      originalEvent: "".concat(event.originalEvent.type, " on .").concat(event.originalEvent.target.classList.toString().replace(" ", ".")),
-      target: "".concat(target.tagName.toLocaleLowerCase(), ".").concat(target.classList.toString().replace(" ", "."))
+      delegatedTarget: event.delegatedTarget.tagName.toLocaleLowerCase() + "." + event.delegatedTarget.classList.toString().replace(' ', '.'),
+      originalEvent: event.originalEvent.type + " on ." + event.originalEvent.target.classList.toString().replace(' ', '.'),
+      target: target.tagName.toLocaleLowerCase() + "." + target.classList.toString().replace(' ', '.')
     });
     output();
   };
 }();
 
-(0, _index.default)();
-window.addEventListener("DOMContentLoaded", function () {
-  var rootTarget = document.querySelector(".content");
-  rootTarget.once("click.AllBtn", ".btn", function (event) {
-    this.classList.add("click");
+index_1.default();
+window.addEventListener('DOMContentLoaded', function () {
+  var rootTarget = document.querySelector('.content');
+  rootTarget.once('click.AllBtn', '.btn', function (event) {
+    this.classList.add('click');
     logEvent(event, this);
   });
-  rootTarget.on("mousedown.AllBtn", ".btn", function (event) {
-    this.classList.add("mousedown");
+  rootTarget.on('mousedown.AllBtn', '.btn', function (event) {
+    this.classList.add('mousedown');
     logEvent(event, this);
   });
-  rootTarget.on("mouseup.allBtn", ".btn", function (event) {
-    this.classList.remove("mousedown");
+  rootTarget.on('mouseup.allBtn', '.btn', function (event) {
+    this.classList.remove('mousedown');
     logEvent(event, this);
     console.log(event);
   });
-  rootTarget.on("click", ".js-add-btn", function (event) {
-    var newBtn = document.createElement("button");
-    newBtn.classList.add("btn");
-    newBtn.textContent = "New .btn";
-    document.querySelector(".btn-list").append(newBtn);
+  rootTarget.on('click', '.js-add-btn', function (event) {
+    var newBtn = document.createElement('button');
+    newBtn.classList.add('btn');
+    newBtn.textContent = 'New .btn';
+    document.querySelector('.btn-list').append(newBtn);
     logEvent(event, this);
   });
 });
@@ -294,7 +293,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50711" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61101" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -470,5 +469,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["../node_modules/parcel-bundler/src/builtins/hmr-runtime.js","demo.js"], null)
-//# sourceMappingURL=/demo.d3b53871.js.map
+},{}]},{},["../node_modules/parcel-bundler/src/builtins/hmr-runtime.js","demo.ts"], null)
+//# sourceMappingURL=/demo.56710ae6.js.map

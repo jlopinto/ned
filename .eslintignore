@@ -1,0 +1,7 @@
+#misc
+.cache/
+
+#project
+lib/
+dist/
+___tests__/
