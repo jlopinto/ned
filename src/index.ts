@@ -4,7 +4,7 @@ const enableEventDelegation = (
 ): void => {
   window[`${eventsMapPrefix}eventsMap`] = [];
 
-  HTMLElement.prototype[`${eventsPrefix}on`] = function (...args: any[]) {
+  HTMLElement.prototype[`${eventsPrefix}on`] = function (...args) {
     const [eventNamespace, targetSelector, handler, once = { once: false }] = args;
     const [eventName] = eventNamespace.split('.');
     const eventsMap = window[`${eventsMapPrefix}eventsMap`];
@@ -12,7 +12,7 @@ const enableEventDelegation = (
     if (typeof targetSelector === 'function' && handler === undefined) {
       const newHandler: Function = targetSelector;
 
-      eventsMap[eventNamespace] = function (event: any) {
+      eventsMap[eventNamespace] = function (event) {
         newHandler.call(this, {
           eventNamespace,
           target: this,
@@ -21,7 +21,7 @@ const enableEventDelegation = (
         });
       };
     } else {
-      eventsMap[eventNamespace] = function (event: any) {
+      eventsMap[eventNamespace] = function (event) {
         for (
           let { target } = event;
           target && target !== this;
@@ -54,8 +54,8 @@ const enableEventDelegation = (
   };
 
   HTMLElement.prototype[`${eventsPrefix}once`] = function (
-    eventNamespace: string,
-    targetSelector: string,
+    eventNamespace,
+    targetSelector,
     handler: Function
   ) {
     this[`${eventsPrefix}on`](eventNamespace, targetSelector, handler, {
