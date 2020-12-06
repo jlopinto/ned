@@ -4,11 +4,8 @@ const enableEventDelegation = (
 ): void => {
   window[`${eventsMapPrefix}eventsMap`] = [];
 
-  HTMLElement.prototype[`${eventsPrefix}on`] = function (
-    eventNamespace: string,
-    ...rest: any
-  ) {
-    const [targetSelector, handler, once = { once: false }] = rest;
+  HTMLElement.prototype[`${eventsPrefix}on`] = function (...args: any[]) {
+    const [eventNamespace, targetSelector, handler, once = { once: false }] = args;
     const [eventName] = eventNamespace.split('.');
     const eventsMap = window[`${eventsMapPrefix}eventsMap`];
 

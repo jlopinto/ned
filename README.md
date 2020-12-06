@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/jlopinto/ned.svg?branch=main)](https://travis-ci.org/github/jlopinto/ned)
+[![David](https://img.shields.io/david/jlopinto/ned?style=flat-square)](https://david-dm.org/jlopinto/ned)
+[![David](https://img.shields.io/david/dev/jlopinto/ned?style=flat-square)](https://david-dm.org/jlopinto/ned?type=dev)
 
 # Namespaced event delegation
 <!--{h1:.massive-header.-with-tagline}-->
