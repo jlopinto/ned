@@ -41,6 +41,7 @@ window.addEventListener("DOMContentLoaded", function () {
   rootTarget.on("mouseup.allBtn", ".btn", function (event) {
     this.classList.remove("mousedown");
     logEvent(event, this);
+    console.log(event);
   });
 
   rootTarget.on("click", ".js-add-btn", function (event) {

@@ -10,19 +10,21 @@ declare global {
   }
 }
 
+/**
+ * Extend HTMLElement.prototype.
+ *
+ * @param eventsPrefix - provide a way to customize methods names
+ * @param eventsMapPrefix - provide a way to customize the events array, names.
+ * @returns void
+ *
+ * @alpha
+ */
+
 const enableEventDelegation = (
   eventsPrefix = "",
-  eventsMapPrefix = "_",
-  window: Window
+  eventsMapPrefix = "_"
 ): void => {
   window[`${eventsMapPrefix}eventsMap`] = [];
-
-  /* polyfill IE */
-  if (!Element.prototype.matches) {
-    Element.prototype.matches =
-      Element.prototype.msMatchesSelector ||
-      Element.prototype.webkitMatchesSelector;
-  }
 
   HTMLElement.prototype[`${eventsPrefix}on`] = function (
     eventNamespace: string,

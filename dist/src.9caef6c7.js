@@ -135,16 +135,20 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+/**
+ * Extend HTMLElement.prototype.
+ *
+ * @param eventsPrefix - provide a way to customize methods names
+ * @param eventsMapPrefix - provide a way to customize the events array, names.
+ * @returns void
+ *
+ * @alpha
+ */
 
 var enableEventDelegation = function enableEventDelegation() {
   var eventsPrefix = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
   var eventsMapPrefix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "_";
   window["".concat(eventsMapPrefix, "eventsMap")] = [];
-  /* polyfill IE */
-
-  if (!Element.prototype.matches) {
-    Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
-  }
 
   HTMLElement.prototype["".concat(eventsPrefix, "on")] = function (eventNamespace, targetSelector, handler, options) {
     var _eventNamespace$split = eventNamespace.split("."),
@@ -232,7 +236,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49515" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50711" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
