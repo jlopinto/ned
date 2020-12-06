@@ -10,18 +10,21 @@ declare global {
   }
 }
 
+/**
+ * Extend HTMLElement.prototype.
+ *
+ * @param eventsPrefix - provide a way to customize methods names
+ * @param eventsMapPrefix - provide a way to customize the events array, names.
+ * @returns void
+ *
+ * @alpha
+ */
+
 const enableEventDelegation = (
   eventsPrefix = "",
   eventsMapPrefix = "_"
 ): void => {
   window[`${eventsMapPrefix}eventsMap`] = [];
-
-  /* polyfill IE */
-  if (!Element.prototype.matches) {
-    Element.prototype.matches =
-      Element.prototype.msMatchesSelector ||
-      Element.prototype.webkitMatchesSelector;
-  }
 
   HTMLElement.prototype[`${eventsPrefix}on`] = function (
     eventNamespace: string,
@@ -31,33 +34,17 @@ const enableEventDelegation = (
   ): HTMLElement {
     const [eventName] = eventNamespace.split(".");
     const eventsMap = window[`${eventsMapPrefix}eventsMap`];
-    const createCustomEvent = function (
-      this: HTMLElement,
-      event: Event,
-      eventNamespace: string,
-      handler: Function,
-      options: { once: boolean }
-    ) {
-      const customEvent = {
-        eventNamespace,
-        options,
-        delegatedTarget: this,
-        originalEvent: event,
-      };
-      handler.call(this, customEvent);
-    };
 
     if (typeof targetSelector === "function" && handler === undefined) {
-      const newHandler = targetSelector;
+      const newHandler:Function = targetSelector;
 
       eventsMap[eventNamespace] = function (event: any) {
-        createCustomEvent.call(
-          this,
-          event,
+        newHandler.call(this, {
           eventNamespace,
-          newHandler,
-          options
-        );
+          options,
+          delegatedTarget: this,
+          originalEvent: event,
+        });
       };
     } else {
       eventsMap[eventNamespace] = function (event: any) {
@@ -67,13 +54,12 @@ const enableEventDelegation = (
           target = target.parentNode
         ) {
           if (target.matches !== undefined && target.matches(targetSelector)) {
-            createCustomEvent.call(
-              target,
-              event,
+            handler.call(this, {
               eventNamespace,
-              handler,
-              options
-            );
+              options,
+              delegatedTarget: this,
+              originalEvent: event,
+            });
             break;
           }
         }

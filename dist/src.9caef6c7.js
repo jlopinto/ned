@@ -135,16 +135,20 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+/**
+ * Extend HTMLElement.prototype.
+ *
+ * @param eventsPrefix - provide a way to customize methods names
+ * @param eventsMapPrefix - provide a way to customize the events array, names.
+ * @returns void
+ *
+ * @alpha
+ */
 
 var enableEventDelegation = function enableEventDelegation() {
   var eventsPrefix = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
   var eventsMapPrefix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "_";
   window["".concat(eventsMapPrefix, "eventsMap")] = [];
-  /* polyfill IE */
-
-  if (!Element.prototype.matches) {
-    Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
-  }
 
   HTMLElement.prototype["".concat(eventsPrefix, "on")] = function (eventNamespace, targetSelector, handler, options) {
     var _eventNamespace$split = eventNamespace.split("."),
@@ -153,27 +157,27 @@ var enableEventDelegation = function enableEventDelegation() {
 
     var eventsMap = window["".concat(eventsMapPrefix, "eventsMap")];
 
-    var createCustomEvent = function createCustomEvent(event, eventNamespace, handler, options) {
-      var customEvent = {
-        eventNamespace: eventNamespace,
-        options: options,
-        delegatedTarget: this,
-        originalEvent: event
-      };
-      handler.call(this, customEvent);
-    };
-
     if (typeof targetSelector === "function" && handler === undefined) {
       var newHandler = targetSelector;
 
       eventsMap[eventNamespace] = function (event) {
-        createCustomEvent.call(this, event, eventNamespace, newHandler, options);
+        newHandler.call(this, {
+          eventNamespace: eventNamespace,
+          options: options,
+          delegatedTarget: this,
+          originalEvent: event
+        });
       };
     } else {
       eventsMap[eventNamespace] = function (event) {
         for (var target = event.target; target && target !== this; target = target.parentNode) {
           if (target.matches !== undefined && target.matches(targetSelector)) {
-            createCustomEvent.call(target, event, eventNamespace, handler, options);
+            handler.call(this, {
+              eventNamespace: eventNamespace,
+              options: options,
+              delegatedTarget: this,
+              originalEvent: event
+            });
             break;
           }
         }
@@ -232,7 +236,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65114" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50711" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
