@@ -2,38 +2,42 @@ import eventDelegation from '../src/index';
 
 const clickEvent = document.createEvent('HTMLEvents');
 clickEvent.initEvent('click', true, true);
-const mockFn = jest.fn();
+const handler = jest.fn();
+
 describe('Attaching events', () => {
-    beforeEach(() => {
-        document.body.innerHTML = '<button class="btn"></button>';
-        mockFn.mockReset();
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <button class="btn btn--delegated"><span>delegated</span></button>
+      <button class="btn btn--direct"><span>direct</span></button>
+    `;
+    handler.mockReset();
+  });
+
+  test('triggering delegated event', () => {
+    const target = '.btn--delegated';
+    const insideTarget = document.querySelector(`${target} span`);
+
+    eventDelegation.on({
+      handler,
+      target,
+      eventName: 'click.btn--delegated',
+      delegatedTarget: document.body
     });
+    insideTarget.dispatchEvent(clickEvent);
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
 
-    test('triggering delegated event', () => {
-        const delegatedTarget = document.body;
-        const target = document.querySelector('.btn');
-        const mockFn = jest.fn();
+  test('triggering direct event', () => {
+    const target = '.btn--direct';
+    const insideTarget = document.querySelector(`${target} span`);
 
-        eventDelegation.on({ delegatedTarget, eventName: 'click.allBtn', target: '.btn', handler: mockFn });
-        target.dispatchEvent(clickEvent);
-        expect(mockFn).toHaveBeenCalledTimes(1);
+    eventDelegation.on({
+      handler,
+      target,
+      eventName: 'click.btn--direct',
+      delegatedTarget: document.body
     });
-
-    test('triggering delegated event with fat arrow', () => {
-        const delegatedTarget = document.body;
-        const target = document.querySelector('.btn');
-        eventDelegation.on({ delegatedTarget, eventName: 'click.allBtn', target: '.btn', handler: mockFn });
-        target.dispatchEvent(clickEvent);
-        expect(mockFn).toHaveBeenCalledTimes(1);
-    });
-
-    test('triggering direct event', () => {
-        const delegatedTarget = document.body;
-        const target = document.querySelector('.btn');
-        const mockFn = jest.fn();
-
-        eventDelegation.on({ delegatedTarget, eventName: 'click.allBtn', handler: mockFn });
-        target.dispatchEvent(clickEvent);
-        expect(mockFn).toHaveBeenCalledTimes(1);
-    });
+    insideTarget.dispatchEvent(clickEvent);
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
 });

@@ -2,38 +2,48 @@ import eventDelegation from '../src/index';
 
 const clickEvent = document.createEvent('HTMLEvents');
 clickEvent.initEvent('click', true, true);
-
-const mockFn = jest.fn();
-let eventParams, target;
+const handler = jest.fn();
 
 describe('Attaching events once', () => {
-
   beforeEach(() => {
-    document.body.innerHTML = '<button class="btn"></button>';
-
-    eventParams = {
-      target: '.btn',
-      delegatedTarget: document.body,
-      eventName: 'click.allBtn',
-      handler: mockFn
-    }
-
-    target = document.querySelector('.btn');
-    mockFn.mockReset();
+    document.body.innerHTML = `
+      <button class="btn btn--delegated"><span>delegated</span></button>
+      <button class="btn btn--direct"><span>direct</span></button>
+    `;
+    handler.mockReset();
   });
 
   test('triggering delegated event once', () => {
-    eventDelegation.once(eventParams);
-    target.dispatchEvent(clickEvent);
-    target.dispatchEvent(clickEvent);
-    expect(mockFn).toHaveBeenCalledTimes(1);
-  });
-  test('triggering direct event once', () => {
-    const { target: targetSelector, ...onceEventParams } = eventParams;
+    const target = '.btn--delegated';
+    const insideTarget = document.querySelector(`${target} span`);
 
-    eventDelegation.once(onceEventParams);
-    target.dispatchEvent(clickEvent);
-    target.dispatchEvent(clickEvent);
-    expect(mockFn).toHaveBeenCalledTimes(1);
+    eventDelegation.once({
+      handler,
+      target,
+      eventName: 'click.btn--delegated',
+      delegatedTarget: document.body,
+      once: true
+    });
+    insideTarget.dispatchEvent(clickEvent);
+    insideTarget.dispatchEvent(clickEvent);
+
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  test('triggering direct event once', () => {
+    const target = '.btn--direct';
+    const insideTarget = document.querySelector(`${target} span`);
+
+    eventDelegation.once({
+      handler,
+      target,
+      eventName: 'click.btn--direct',
+      delegatedTarget: document.body,
+      once: true
+    });
+    insideTarget.dispatchEvent(clickEvent);
+    insideTarget.dispatchEvent(clickEvent);
+
+    expect(handler).toHaveBeenCalledTimes(1);
   });
 });

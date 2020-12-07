@@ -3,8 +3,7 @@
 [![David](https://img.shields.io/david/dev/jlopinto/ned?style=flat-square)](https://david-dm.org/jlopinto/ned?type=dev)
 
 # Namespaced event delegation
-<!--{h1:.massive-header.-with-tagline}-->
-> Simple event managment
+> Lightweight helper library to handle DOM Events.
 
 ## Table of Contents
 
