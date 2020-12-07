@@ -1,68 +1,90 @@
-const enableEventDelegation = (
-  eventsPrefix = '',
-  eventsMapPrefix = '_'
-): void => {
-  window[`${eventsMapPrefix}eventsMap`] = [];
+interface DelegatedEvent {
+  eventName: string;
+  delegatedTarget: Element;
+  handler?: Function;
+  target?: string;
+  once?: boolean;
+}
 
-  HTMLElement.prototype[`${eventsPrefix}on`] = function (...args) {
-    const [eventNamespace, targetSelector, handler, once = { once: false }] = args;
-    const [eventName] = eventNamespace.split('.');
-    const eventsMap = window[`${eventsMapPrefix}eventsMap`];
+class EventDelegation {
+  private eventsMap = [];
 
-    if (typeof targetSelector === 'function' && handler === undefined) {
-      const newHandler: Function = targetSelector;
+  private extractEventName = (eventName) => eventName.split('.')[0];
 
-      eventsMap[eventNamespace] = function (event) {
-        newHandler.call(this, {
-          eventNamespace,
-          target: this,
-          delegatedTarget: this,
-          originalEvent: event
-        });
+  on = ({
+    eventName,
+    target = undefined,
+    handler,
+    delegatedTarget,
+    once = false
+  }: DelegatedEvent) => {
+    let newEvent;
+    let currentTarget = delegatedTarget;
+    const handlerParams = {
+      eventName,
+      currentTarget,
+      delegatedTarget
+    };
+
+    if (!target) {
+      newEvent = (event) => {
+        handler({ ...handlerParams, originalEvent: event });
       };
     } else {
-      eventsMap[eventNamespace] = function (event) {
+      newEvent = (event) => {
+        currentTarget = event.target;
         for (
-          let { target } = event;
-          target && target !== this;
-          target = target.parentNode
+          currentTarget;
+          currentTarget && currentTarget !== delegatedTarget;
+          currentTarget = currentTarget.parentNode as Element
         ) {
-          if (target.matches !== undefined && target.matches(targetSelector)) {
-            handler.call(this, {
-              target,
-              eventNamespace,
-              delegatedTarget: this,
-              originalEvent: event
-            });
+          if (
+            currentTarget.matches !== undefined &&
+            currentTarget.matches(target)
+          ) {
+            handler({ ...handlerParams, currentTarget, originalEvent: event });
             break;
           }
         }
       };
     }
-    this.addEventListener(eventName, eventsMap[eventNamespace], once);
-    return this;
+
+    this.eventsMap[eventName] = newEvent;
+
+    delegatedTarget.addEventListener(
+      this.extractEventName(eventName),
+      this.eventsMap[eventName],
+      { once }
+    );
+
+    return currentTarget;
   };
 
-  HTMLElement.prototype[`${eventsPrefix}off`] = function (
-    eventNamespace: string
-  ) {
-    const [eventName] = eventNamespace.split('.');
-    const targetedEvent = window[`${eventsMapPrefix}eventsMap`];
-    this.removeEventListener(eventName, targetedEvent[eventNamespace]);
-    delete targetedEvent[eventNamespace];
-    return this;
-  };
-
-  HTMLElement.prototype[`${eventsPrefix}once`] = function (
-    eventNamespace,
-    targetSelector,
-    handler: Function
-  ) {
-    this[`${eventsPrefix}on`](eventNamespace, targetSelector, handler, {
+  once = ({ eventName, target, handler, delegatedTarget }: DelegatedEvent) =>
+    this.on({
+      eventName,
+      target,
+      handler,
+      delegatedTarget,
       once: true
     });
-    return this;
-  };
-};
 
-export default enableEventDelegation;
+  off = ({ delegatedTarget, eventName }: DelegatedEvent): boolean => {
+    delegatedTarget.removeEventListener(
+      this.extractEventName(eventName),
+      this.eventsMap[eventName]
+    );
+    return delete this.eventsMap[eventName];
+  };
+
+  fire = ({ delegatedTarget, eventName }: DelegatedEvent): boolean => {
+    const evt = document.createEvent('Event');
+    evt.initEvent(this.extractEventName(eventName), true, true);
+    return delegatedTarget.dispatchEvent(evt);
+  };
+}
+
+const EventDelegationSingleton = new EventDelegation();
+Object.freeze(EventDelegationSingleton);
+
+export default EventDelegationSingleton;

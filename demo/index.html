@@ -20,12 +20,22 @@
           </button>
           <h2>with sub-content</h2>
           <div class="btn-list">
-            <button class="btn">
+            <button class="btn btn--full">
               <div class="btn__icon">
                 <div class="fake-icon"></div>
               </div>
-              <div class="btn__label">My label</div>
+              <div class="btn__label">Button with inner markup</div>
             </button>
+            <button class="btn btn--direct">
+              <div class="btn__label">Direct event</div>
+            </button>
+            <button class="btn btn--ned">
+              <div class="btn__label">Ned Event</div>
+            </button>
+            <form action="?" class="myForm">
+              <input type="hidden" name="plop" value="sent">
+              <button type="submit">submit</button>
+            </form>
           </div>
         </div>
       </div>

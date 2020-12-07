@@ -41,6 +41,7 @@ td {
   display: flex;
   color: white;
   padding: 0.5rem 1rem;
+  outline: 0;
 }
 
 .btn__icon {
@@ -56,7 +57,7 @@ td {
 }
 
 .click {
-  border-color: white;
+  border-color: green;
 }
 
 .mousedown {

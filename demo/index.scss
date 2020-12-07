@@ -39,6 +39,7 @@ td {
   display: flex;
   color: white;
   padding: 0.5rem 1rem;
+  outline: 0;
 }
 
 .btn__icon {
@@ -53,7 +54,7 @@ td {
   transform: rotateZ(45deg);
 }
 .click {
-  border-color: white;
+  border-color: green;
 }
 
 .mousedown {
