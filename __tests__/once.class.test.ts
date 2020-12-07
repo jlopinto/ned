@@ -1,29 +1,37 @@
-const enableEventDelegation = require('../src/index.ts').default;
+import eventDelegation from '../src/index';
 
-enableEventDelegation();
 const clickEvent = document.createEvent('HTMLEvents');
 clickEvent.initEvent('click', true, true);
 
+const mockFn = jest.fn();
+let eventParams, target;
+
 describe('Attaching events once', () => {
+
   beforeEach(() => {
     document.body.innerHTML = '<button class="btn"></button>';
-  });
-  test('triggering delegated event once', () => {
-    const delegatedTarget = document.body;
-    const target = document.querySelector('.btn');
-    const mockFn = jest.fn();
 
-    delegatedTarget.once('click.allBtn', '.btn', mockFn);
+    eventParams = {
+      target: '.btn',
+      delegatedTarget: document.body,
+      eventName: 'click.allBtn',
+      handler: mockFn
+    }
+
+    target = document.querySelector('.btn');
+    mockFn.mockReset();
+  });
+
+  test('triggering delegated event once', () => {
+    eventDelegation.once(eventParams);
     target.dispatchEvent(clickEvent);
     target.dispatchEvent(clickEvent);
     expect(mockFn).toHaveBeenCalledTimes(1);
   });
   test('triggering direct event once', () => {
-    const delegatedTarget = document.body;
-    const target = document.querySelector('.btn');
-    const mockFn = jest.fn();
+    const { target: targetSelector, ...onceEventParams } = eventParams;
 
-    delegatedTarget.once('click.allBtn', mockFn);
+    eventDelegation.once(onceEventParams);
     target.dispatchEvent(clickEvent);
     target.dispatchEvent(clickEvent);
     expect(mockFn).toHaveBeenCalledTimes(1);
