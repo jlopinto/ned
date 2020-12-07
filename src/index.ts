@@ -9,15 +9,9 @@ interface DelegatedEvent {
 class EventDelegation {
   private eventsMap = [];
 
-  private extractEventName = (eventName) => eventName.split('.')[0];
+  extractEventName = (eventName) => eventName.split('.')[0];
 
-  on = ({
-    eventName,
-    target = undefined,
-    handler,
-    delegatedTarget,
-    once = false
-  }: DelegatedEvent) => {
+  on = ({ eventName, target = undefined, handler, delegatedTarget, once = false }: DelegatedEvent) => {
     let newEvent;
     let currentTarget = delegatedTarget;
     const handlerParams = {
@@ -38,10 +32,7 @@ class EventDelegation {
           currentTarget && currentTarget !== delegatedTarget;
           currentTarget = currentTarget.parentNode as Element
         ) {
-          if (
-            currentTarget.matches !== undefined &&
-            currentTarget.matches(target)
-          ) {
+          if (currentTarget.matches !== undefined && currentTarget.matches(target)) {
             handler({ ...handlerParams, currentTarget, originalEvent: event });
             break;
           }
@@ -51,11 +42,7 @@ class EventDelegation {
 
     this.eventsMap[eventName] = newEvent;
 
-    delegatedTarget.addEventListener(
-      this.extractEventName(eventName),
-      this.eventsMap[eventName],
-      { once }
-    );
+    delegatedTarget.addEventListener(this.extractEventName(eventName), this.eventsMap[eventName], { once });
 
     return currentTarget;
   };
@@ -70,10 +57,7 @@ class EventDelegation {
     });
 
   off = ({ delegatedTarget, eventName }: DelegatedEvent): boolean => {
-    delegatedTarget.removeEventListener(
-      this.extractEventName(eventName),
-      this.eventsMap[eventName]
-    );
+    delegatedTarget.removeEventListener(this.extractEventName(eventName), this.eventsMap[eventName]);
     return delete this.eventsMap[eventName];
   };
 

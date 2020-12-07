@@ -21,14 +21,10 @@ const logEvent = (() => {
         event.delegatedTarget.tagName.toLocaleLowerCase(),
         event.delegatedTarget.classList.toString().trim().replace(' ', '.')
       ].join('.'),
-      originalEvent: `${
-        event.originalEvent.type
-      } => .${event.originalEvent.target.classList
+      originalEvent: `${event.originalEvent.type} => .${event.originalEvent.target.classList
         .toString()
         .replace(' ', '.')}`,
-      target: `${currentTarget.tagName.toLocaleLowerCase()}.${currentTarget.classList
-        .toString()
-        .replace(' ', '.')}`
+      target: `${currentTarget.tagName.toLocaleLowerCase()}.${currentTarget.classList.toString().replace(' ', '.')}`
     });
     output();
   };
