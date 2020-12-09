@@ -1,12 +1,12 @@
-interface EmEventsItem {
+interface EventsItem {
   eventNamespace: string;
   handler;
 }
 
-interface EmEventsItems extends Array<EmEventsItem> {}
+interface EventsItems extends Array<EventsItem> {}
 
-class EventManagerSingleton {
-  private eventsMap: EmEventsItems = [];
+export default class EventManagerSingleton {
+  private eventsMap: EventsItems = [];
 
   static instance: EventManagerSingleton;
 
@@ -35,8 +35,6 @@ class EventManagerSingleton {
     return eventsRemoved;
   };
 
-  getEvents = (eventNamespace: string = undefined): EmEventsItems =>
+  getEvents = (eventNamespace: string = undefined): EventsItems =>
     eventNamespace ? this.eventsMap.filter((event) => event.eventNamespace === eventNamespace) : this.eventsMap;
 }
-
-export default EventManagerSingleton;

@@ -1,5 +1,6 @@
-import eventDelegation from '../src/index';
+import EventDelegation from '../src/index';
 
+const eventDelegation = new EventDelegation();
 const clickEvent = document.createEvent('HTMLEvents');
 clickEvent.initEvent('click', true, true);
 const handler = jest.fn();
@@ -14,12 +15,12 @@ describe('Attaching events once', () => {
   });
 
   test('triggering delegated event once', () => {
-    const target = '.btn--delegated';
-    const insideTarget = document.querySelector(`${target} span`);
+    const targetSelector = '.btn--delegated';
+    const insideTarget = document.querySelector(`${targetSelector} span`);
 
     eventDelegation.once({
       handler,
-      target,
+      targetSelector,
       eventName: 'click.btn--delegated',
       delegatedTarget: document.body,
       once: true
@@ -31,12 +32,12 @@ describe('Attaching events once', () => {
   });
 
   test('triggering direct event once', () => {
-    const target = '.btn--direct';
-    const insideTarget = document.querySelector(`${target} span`);
+    const targetSelector = '.btn--direct';
+    const insideTarget = document.querySelector(`${targetSelector} span`);
 
     eventDelegation.once({
       handler,
-      target,
+      targetSelector,
       eventName: 'click.btn--direct',
       delegatedTarget: document.body,
       once: true

@@ -8,10 +8,8 @@ interface DelegatedEvent {
   once?: boolean;
 }
 
-class NamespacedEventDelegation extends EventManager {
-  extractEventName = (eventName) => eventName.split('.')[0];
-
-  on = ({ eventName, targetSelector, handler, delegatedTarget, once = false }: DelegatedEvent) => {
+export default class NamespacedEventDelegation extends EventManager {
+  public on = ({ eventName, targetSelector, handler, delegatedTarget, once = false }: DelegatedEvent) => {
     const delegatedEvent = (event) => {
       let handlerParams = {
         eventName,
@@ -40,7 +38,7 @@ class NamespacedEventDelegation extends EventManager {
     return this.getEvents();
   };
 
-  once = ({ eventName, targetSelector, handler, delegatedTarget }: DelegatedEvent) =>
+  public once = ({ eventName, targetSelector, handler, delegatedTarget }: DelegatedEvent) =>
     this.on({
       eventName,
       targetSelector,
@@ -49,7 +47,7 @@ class NamespacedEventDelegation extends EventManager {
       once: true
     });
 
-  off = ({ delegatedTarget, eventName }: DelegatedEvent): boolean => {
+  public off = ({ delegatedTarget, eventName }: DelegatedEvent): boolean => {
     this.getEvents(eventName).forEach((event) => {
       delegatedTarget.removeEventListener(this.extractEventName(eventName), event.handler);
     });
@@ -57,11 +55,11 @@ class NamespacedEventDelegation extends EventManager {
     return this.removeEvents(eventName);
   };
 
-  fire = ({ delegatedTarget, eventName }: DelegatedEvent): boolean => {
+  public fire = ({ delegatedTarget, eventName }: DelegatedEvent): boolean => {
     const evt = document.createEvent('Event');
     evt.initEvent(this.extractEventName(eventName), true, true);
     return delegatedTarget.dispatchEvent(evt);
   };
-}
 
-export default NamespacedEventDelegation;
+  private extractEventName = (eventName) => eventName.split('.')[0];
+}

@@ -18,7 +18,7 @@
     "watch": "parcel watch demo/index.html src/index.ts",
     "prebuild": "rm -rf dist",
     "build": "microbundle && parcel build demo/index.html --no-source-maps --no-content-hash --global Ned",
-    "test": "jest --verbose",
+    "test": "jest",
     "lint": "eslint . --ext .ts"
   },
   "author": "Julien Lopinto",
