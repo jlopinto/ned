@@ -3,10 +3,10 @@ import EventDelegation from '../src/index';
 const clickEvent = document.createEvent('HTMLEvents');
 clickEvent.initEvent('click', true, true);
 const handler = jest.fn();
-const eventPreventDefaultHandler = jest.fn((event) => {
-  console.log(event);
-  event.preventDefault();
+const formSubmitHandler = jest.fn((cb) => {
+  console.log(cb);
 });
+const eventPreventDefaultHandler = jest.fn();
 const eventDelegation = new EventDelegation();
 describe('Attaching events', () => {
   beforeEach(() => {
@@ -14,7 +14,7 @@ describe('Attaching events', () => {
       <button class="btn btn--delegated"><span>delegated</span></button>
       <button class="btn btn--direct"><span>direct</span></button>
 
-      <form class="form">
+      <form class="form" onSubmit="console.log('plop');">
         <button class="form__submit" type="submit"><span>submit form</sapn></buttton>
       </form>
     `;
@@ -53,25 +53,34 @@ describe('Attaching events', () => {
   test('can be prevented', () => {
     const delegatedTarget = document.querySelector('.form');
     const insideTarget = delegatedTarget.querySelector(`.form__submit span`);
+    // const eventSpyer = { originalEvent: { preventDefault: () => {} } };
+
+    // jest.spyOn(eventSpyer.originalEvent, 'preventDefault');
 
     const onFormSubmit = {
-      handler,
-      eventName: 'submit.forms',
-      targetSelector: '',
+      handler: (event) => {
+        handler();
+        console.log('onFormSubmit', event);
+      },
+      eventName: 'submit',
       delegatedTarget: document.querySelector('.form')
     };
 
     const onFormSubmitClick = {
-      eventPreventDefaultHandler,
+      handler: (event) => {
+        eventPreventDefaultHandler();
+        event.originalEvent.preventDefault();
+      },
+      targetSelector: '.form__submit',
       eventName: 'click.forms',
-      delegatedTarget: document.querySelector('.form')
+      delegatedTarget: document.body
     };
 
     eventDelegation.on(onFormSubmit);
-    eventDelegation.on(onFormSubmitClick);
+    // eventDelegation.on(onFormSubmitClick);
 
     insideTarget.dispatchEvent(clickEvent);
-    expect(eventPreventDefaultHandler).toHaveBeenCalledTimes(1);
-    expect(handler).toHaveBeenCalledTimes(0);
+    // expect(eventPreventDefaultHandler).toHaveBeenCalledTimes(1);
+    expect(formSubmitHandler).toHaveBeenCalledTimes(0);
   });
 });

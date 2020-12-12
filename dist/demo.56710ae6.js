@@ -132,8 +132,9 @@ function () {
 
     this.eventsMap = [];
 
-    this.addEvent = function (eventNamespace, event) {
+    this.addEvent = function (delegatedTargetElement, eventNamespace, event) {
       _this.eventsMap.push({
+        delegatedTargetElement: delegatedTargetElement,
         eventNamespace: eventNamespace,
         handler: event
       });
@@ -141,13 +142,13 @@ function () {
       return event;
     };
 
-    this.removeEvents = function (eventNamespace) {
+    this.removeEvents = function (delegatedTargetElement, eventNamespace) {
       var eventsRemoved = _this.eventsMap.some(function (event) {
         return event.eventNamespace === eventNamespace;
       });
 
       _this.eventsMap.forEach(function (event, index) {
-        if (event.eventNamespace === eventNamespace) {
+        if (event.delegatedTargetElement === delegatedTargetElement && event.eventNamespace === eventNamespace) {
           delete _this.eventsMap[index];
         }
       });
@@ -222,6 +223,20 @@ var __assign = this && this.__assign || function () {
   return __assign.apply(this, arguments);
 };
 
+var __spreadArrays = this && this.__spreadArrays || function () {
+  for (var s = 0, i = 0, il = arguments.length; i < il; i++) {
+    s += arguments[i].length;
+  }
+
+  for (var r = Array(s), k = 0, i = 0; i < il; i++) {
+    for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) {
+      r[k] = a[j];
+    }
+  }
+
+  return r;
+};
+
 var __importDefault = this && this.__importDefault || function (mod) {
   return mod && mod.__esModule ? mod : {
     "default": mod
@@ -242,78 +257,91 @@ function (_super) {
   function NamespacedEventDelegation() {
     var _this = _super !== null && _super.apply(this, arguments) || this;
 
-    _this.extractEventName = function (eventName) {
-      return eventName.split('.')[0];
-    };
-
     _this.on = function (_a) {
-      var eventName = _a.eventName,
-          targetSelector = _a.targetSelector,
+      var events = _a.events,
+          elements = _a.elements,
+          targets = _a.targets,
           handler = _a.handler,
-          delegatedTarget = _a.delegatedTarget,
           _b = _a.once,
           once = _b === void 0 ? false : _b;
 
-      var delegatedEvent = function delegatedEvent(event) {
-        var handlerParams = {
-          eventName: eventName,
-          delegatedTarget: delegatedTarget,
-          currentTarget: delegatedTarget,
-          originalEvent: event
-        };
+      var _elements;
 
-        if (targetSelector) {
-          var target = event.target.closest(targetSelector);
+      if (typeof elements === 'string') {
+        _elements = document.querySelectorAll(elements);
+      } else {
+        _elements = __spreadArrays(_elements);
+      }
 
-          if (!target) {
-            return false;
-          }
+      var _eventsNames = events.split(' ');
 
-          handlerParams = __assign(__assign({}, handlerParams), {
-            currentTarget: target || handlerParams.delegatedTarget
+      console.log(_elements);
+
+      _elements.forEach(function (element) {
+        _eventsNames.forEach(function (eventName) {
+          element.addEventListener(_this.extractEventName(eventName), _this.addEvent(element, eventName, function (event) {
+            var handlerParams = {
+              event: eventName,
+              delegatedTarget: element,
+              currentTarget: element,
+              originalEvent: event
+            };
+
+            if (targets) {
+              var target = event.target.closest(targets);
+
+              if (!target) {
+                return false;
+              }
+
+              handlerParams = __assign(__assign({}, handlerParams), {
+                currentTarget: target || handlerParams.delegatedTarget
+              });
+            }
+
+            return handler(handlerParams);
+          }), {
+            once: once
           });
-        }
-
-        return handler(handlerParams);
-      };
-
-      delegatedTarget.addEventListener(_this.extractEventName(eventName), _this.addEvent(eventName, delegatedEvent), {
-        once: once
+        });
       });
-      return _this.getEvents();
     };
 
     _this.once = function (_a) {
-      var eventName = _a.eventName,
-          targetSelector = _a.targetSelector,
-          handler = _a.handler,
-          delegatedTarget = _a.delegatedTarget;
+      var events = _a.events,
+          elements = _a.elements,
+          targets = _a.targets,
+          handler = _a.handler;
       return _this.on({
-        eventName: eventName,
-        targetSelector: targetSelector,
+        events: events,
+        elements: elements,
+        targets: targets,
         handler: handler,
-        delegatedTarget: delegatedTarget,
         once: true
       });
     };
 
     _this.off = function (_a) {
-      var delegatedTarget = _a.delegatedTarget,
+      var element = _a.element,
           eventName = _a.eventName;
 
       _this.getEvents(eventName).forEach(function (event) {
-        delegatedTarget.removeEventListener(_this.extractEventName(eventName), event.handler);
+        element.removeEventListener(_this.extractEventName(eventName), event.handler);
       });
 
-      return _this.removeEvents(eventName);
+      return _this.removeEvents(element, eventName);
     };
 
     _this.fire = function (_a) {
-      var delegatedTarget = _a.delegatedTarget,
+      var element = _a.element,
           eventName = _a.eventName;
       var evt = document.createEvent('Event');
       evt.initEvent(_this.extractEventName(eventName), true, true);
-      return delegatedTarget.dispatchEvent(evt);
+      return element.dispatchEvent(evt);
+    };
+
+    _this.extractEventName = function (eventName) {
+      return eventName.split('.')[0];
     };
 
     return _this;
@@ -384,69 +412,86 @@ var logEvent = function () {
 }();
 
 window.addEventListener('DOMContentLoaded', function () {
-  var delegatedTarget = document.querySelector('.content');
   var myDelegatedEvent = {
-    targetSelector: '.btn--ned',
-    delegatedTarget: delegatedTarget,
+    targets: '.btn--ned',
+    elements: '.container',
     handler: function handler(event) {
       logEvent(event);
     },
-    eventName: 'click.btnNed'
+    events: 'click.btnNed'
   };
   var myDirectEvent = {
-    delegatedTarget: document.querySelector('.btn--direct'),
+    elements: '.btn--direct',
     handler: function handler(event) {
+      console.log(event);
       var removed = eventDelegation.off({
-        delegatedTarget: document.querySelector('.btn--direct'),
+        delegatedTarget: event.delegatedTarget,
         eventName: 'click.btnDirect'
       });
       event.currentTarget.classList.remove('btn--direct');
       console.log({
         removed: removed
       });
+      event.originalEvent.stopImmediatePropagation();
       logEvent(event);
     },
-    eventName: 'click.btnDirect'
+    events: 'click.btnDirect'
+  };
+  var myDirectEventOnce = {
+    elements: '.btn--direct',
+    handler: function handler(event) {
+      logEvent(event);
+    },
+    events: 'click.btnDirectOnce'
   };
   var allBtnMousedown = {
-    targetSelector: '.btn',
-    delegatedTarget: delegatedTarget,
+    targets: '.btn',
+    elements: '.container',
     handler: function handler(event) {
       console.log(event);
       var currentTarget = event.currentTarget;
       currentTarget.classList.add('click');
       logEvent(event);
     },
-    eventName: 'mousedown.AllBtn'
+    events: 'mousedown.AllBtn'
   };
   var allBtnMouseup = {
-    targetSelector: '.btn',
-    delegatedTarget: delegatedTarget,
+    targets: '.btn',
+    elements: '.container',
     handler: function handler(event) {
       var currentTarget = event.currentTarget;
       currentTarget.classList.remove('click');
       logEvent(event);
     },
-    eventName: 'mouseup.AllBtn'
+    events: 'mouseup.AllBtn'
   };
+  var complexEvent = {
+    events: 'click.myClick mouseover.myClick',
+    targets: '.btn__label, h2',
+    elements: '.container, .nav',
+    handler: function handler(event) {
+      logEvent(event);
+    }
+  };
+  eventDelegation.on(complexEvent);
   eventDelegation.on(myDelegatedEvent);
   eventDelegation.on(myDirectEvent);
+  eventDelegation.once(myDirectEventOnce);
   eventDelegation.on(allBtnMousedown);
   eventDelegation.on(allBtnMouseup);
-  console.log(eventDelegation.on({
-    eventName: 'submit.myForm',
-    delegatedTarget: document.body,
-    targetSelector: '.myForm',
+  eventDelegation.on({
+    events: 'submit.myForm',
+    elements: document.body,
+    targets: '.myForm',
     handler: function handler(event) {
       logEvent(event);
       event.originalEvent.preventDefault();
       event.originalEvent.stopPropagation();
     }
-  }));
-  eventDelegation.fire({
-    delegatedTarget: document.querySelector('.btn--ned'),
-    eventName: 'click'
-  });
+  }); // eventDelegation.fire({
+  //   element: '.btn--ned',
+  //   eventName: 'click'
+  // });
 });
 },{"../src/index":"../src/index.ts"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -476,7 +521,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53499" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62805" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

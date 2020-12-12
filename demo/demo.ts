@@ -31,73 +31,91 @@ const logEvent = (() => {
 })();
 
 window.addEventListener('DOMContentLoaded', function () {
-  const delegatedTarget = document.querySelector('.content');
 
   const myDelegatedEvent = {
-    targetSelector: '.btn--ned',
-    delegatedTarget,
+    targets: '.btn--ned',
+    elements: '.container',
     handler: (event) => {
       logEvent(event);
     },
-    eventName: 'click.btnNed'
+    events: 'click.btnNed'
   };
 
   const myDirectEvent = {
-    delegatedTarget: document.querySelector('.btn--direct'),
+    elements: '.btn--direct',
     handler: (event) => {
+      console.log(event);
       const removed = eventDelegation.off({
-        delegatedTarget: document.querySelector('.btn--direct'),
+        delegatedTarget: event.delegatedTarget,
         eventName: 'click.btnDirect'
       });
       event.currentTarget.classList.remove('btn--direct');
       console.log({ removed });
+      event.originalEvent.stopImmediatePropagation();
       logEvent(event);
     },
-    eventName: 'click.btnDirect'
+    events: 'click.btnDirect'
+  };
+
+  const myDirectEventOnce = {
+    elements: '.btn--direct',
+    handler: (event) => {
+      logEvent(event);
+    },
+    events: 'click.btnDirectOnce'
   };
 
   const allBtnMousedown = {
-    targetSelector: '.btn',
-    delegatedTarget,
+    targets: '.btn',
+    elements: '.container',
     handler: (event) => {
       console.log(event);
       const { currentTarget } = event;
       currentTarget.classList.add('click');
       logEvent(event);
     },
-    eventName: 'mousedown.AllBtn'
+    events: 'mousedown.AllBtn'
   };
 
   const allBtnMouseup = {
-    targetSelector: '.btn',
-    delegatedTarget,
+    targets: '.btn',
+    elements: '.container',
     handler: (event) => {
       const { currentTarget } = event;
       currentTarget.classList.remove('click');
       logEvent(event);
     },
-    eventName: 'mouseup.AllBtn'
+    events: 'mouseup.AllBtn'
   };
 
+  const complexEvent = {
+    events: 'click.myClick mouseover.myClick',
+    targets: '.btn__label, h2',
+    elements: '.container, .nav',
+    handler: (event) => {
+      logEvent(event);
+    }
+  }
+  eventDelegation.on(complexEvent);
   eventDelegation.on(myDelegatedEvent);
   eventDelegation.on(myDirectEvent);
+  eventDelegation.once(myDirectEventOnce);
   eventDelegation.on(allBtnMousedown);
   eventDelegation.on(allBtnMouseup);
-  console.log(
-    eventDelegation.on({
-      eventName: 'submit.myForm',
-      delegatedTarget: document.body,
-      targetSelector: '.myForm',
-      handler: (event) => {
-        logEvent(event);
-        event.originalEvent.preventDefault();
-        event.originalEvent.stopPropagation();
-      }
-    })
-  );
 
-  eventDelegation.fire({
-    delegatedTarget: document.querySelector('.btn--ned'),
-    eventName: 'click'
+  eventDelegation.on({
+    events: 'submit.myForm',
+    elements: document.body,
+    targets: '.myForm',
+    handler: (event) => {
+      logEvent(event);
+      event.originalEvent.preventDefault();
+      event.originalEvent.stopPropagation();
+    }
   });
+
+  // eventDelegation.fire({
+  //   element: '.btn--ned',
+  //   eventName: 'click'
+  // });
 });
