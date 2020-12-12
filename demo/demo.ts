@@ -46,8 +46,8 @@ window.addEventListener('DOMContentLoaded', function () {
     handler: (event) => {
       console.log(event);
       const removed = eventDelegation.off({
-        delegatedTarget: event.delegatedTarget,
-        eventName: 'click.btnDirect'
+        elements: event.delegatedTarget,
+        events: 'click.btnDirect'
       });
       event.currentTarget.classList.remove('btn--direct');
       console.log({ removed });
@@ -69,7 +69,6 @@ window.addEventListener('DOMContentLoaded', function () {
     targets: '.btn',
     elements: '.container',
     handler: (event) => {
-      console.log(event);
       const { currentTarget } = event;
       currentTarget.classList.add('click');
       logEvent(event);
@@ -118,4 +117,6 @@ window.addEventListener('DOMContentLoaded', function () {
   //   element: '.btn--ned',
   //   eventName: 'click'
   // });
+
+  console.log(eventDelegation.getEvents());
 });

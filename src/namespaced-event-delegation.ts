@@ -1,76 +1,78 @@
 import EventManager from './event-manager';
 
-interface EventLabel {
-  eventName: string;
-  element;
+interface EventLabels {
+  events: string;
+  elements: string;
 }
 
-interface DelegatedEvent {
+interface DelegatedEvent extends EventLabels {
   handler: Function;
-  elements;
-  events: string;
-  targets?;
+  targets?: string;
   once?: boolean;
 }
+
 export default class NamespacedEventDelegation extends EventManager {
-
   public on = ({ events, elements, targets, handler, once = false }: DelegatedEvent) => {
-    let _elements;
+    this.candidates(elements, events, (element, eventNamespace) => {
+      element.addEventListener(
+        this.extractEventName(eventNamespace),
+        this.addEvent(element, eventNamespace, (originalEvent) => {
+          let handlerParams = {
+            event: eventNamespace,
+            delegatedTarget: element,
+            currentTarget: element,
+            originalEvent
+          };
 
-    if (typeof elements === 'string') {
-      _elements = document.querySelectorAll(elements);
-    } else {
-      _elements = [..._elements];
-    }
-
-    const _eventsNames = events.split(' ');
-    console.log(_elements);
-    _elements.forEach(element => {
-      _eventsNames.forEach((eventName) => {
-
-        element.addEventListener(
-          this.extractEventName(eventName),
-          this.addEvent(element, eventName, (event) => {
-            let handlerParams = {
-              event: eventName,
-              delegatedTarget: element,
-              currentTarget: element,
-              originalEvent: event
-            };
-
-            if (targets) {
-              const target = event.target.closest(targets);
-              if (!target) {
-                return false;
-              }
-
-              handlerParams = {
-                ...handlerParams,
-                currentTarget: target || handlerParams.delegatedTarget
-              };
+          if (targets) {
+            const target = originalEvent.target.closest(targets);
+            if (!target) {
+              return false;
             }
-            return handler(handlerParams);
-          }),
-          { once }
-        );
+
+            handlerParams = {
+              ...handlerParams,
+              currentTarget: target || handlerParams.delegatedTarget
+            };
+          }
+          return handler(handlerParams);
+        }),
+        { once }
+      );
+    });
+  };
+
+  public once = ({ events, elements, targets, handler }: DelegatedEvent) =>
+    this.on({ events, elements, targets, handler, once: true });
+
+  public off = ({ elements, events }: EventLabels): boolean[] => {
+    const removed = [];
+    this.getEvents().forEach((storedEvent) => {
+      this.candidates(elements, events, (element, event) => {
+        element.removeEventListener(this.extractEventName(event), storedEvent.handler);
+        removed.push(this.removeEvents(element, event));
       });
     });
+
+    return removed;
   };
 
-  public once = ({ events, elements, targets, handler }: DelegatedEvent) => this.on({ events, elements, targets, handler, once: true });
+  public fire = ({ elements, events }: EventLabels): boolean[] => {
+    const fired = [];
+    const evt = document.createEvent('Event');
 
-  public off = ({ element, eventName }: EventLabel): boolean => {
-    this.getEvents(eventName).forEach((event) => {
-      element.removeEventListener(this.extractEventName(eventName), event.handler);
+    this.candidates(elements, events, (element, event) => {
+      evt.initEvent(this.extractEventName(event), true, true);
+      fired.push(element.dispatchEvent(evt));
     });
 
-    return this.removeEvents(element, eventName);
+    return fired;
   };
 
-  public fire = ({ element, eventName }: EventLabel): boolean => {
-    const evt = document.createEvent('Event');
-    evt.initEvent(this.extractEventName(eventName), true, true);
-    return element.dispatchEvent(evt);
+  private candidates = (elements, events, fn) => {
+    const elementsArr = typeof elements === 'string' ? document.querySelectorAll(elements) : [elements];
+    const eventsArr = events.split(' ');
+    elementsArr.forEach((element) => eventsArr.forEach((event) => fn(element, event)));
   };
 
   private extractEventName = (eventName) => eventName.split('.')[0];

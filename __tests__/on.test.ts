@@ -3,84 +3,87 @@ import EventDelegation from '../src/index';
 const clickEvent = document.createEvent('HTMLEvents');
 clickEvent.initEvent('click', true, true);
 const handler = jest.fn();
-const formSubmitHandler = jest.fn((cb) => {
-  console.log(cb);
-});
-const eventPreventDefaultHandler = jest.fn();
 const eventDelegation = new EventDelegation();
-describe('Attaching events', () => {
-  beforeEach(() => {
-    document.body.innerHTML = `
-      <button class="btn btn--delegated"><span>delegated</span></button>
-      <button class="btn btn--direct"><span>direct</span></button>
 
-      <form class="form" onSubmit="console.log('plop');">
-        <button class="form__submit" type="submit"><span>submit form</sapn></buttton>
-      </form>
-    `;
-    handler.mockReset();
-    eventPreventDefaultHandler.mockReset();
-  });
+const appendElement = (markup, where) => {
+  where.insertAdjacentHTML('beforeend', markup);
+};
 
-  test('triggering delegated event', () => {
-    const targetSelector = '.btn--delegated';
-    const insideTarget = document.querySelector(`${targetSelector} span`);
+const complexCtas = `
+  <button class="btn btn--delegated"><span>delegated</span></button>
+  <button class="btn btn--direct"><span>direct</span></button>
+`;
 
+const testSetup = () => {
+  document.body.innerHTML = `
+    <div class="section--with-ned">
+      ${complexCtas}
+    </div>
+    <div class="section--without-ned">
+      ${complexCtas}
+    </div>
+  `;
+  handler.mockReset();
+};
+
+describe('Delegated event on existing element', () => {
+  beforeEach(testSetup);
+
+  it('should call delegated event', () => {
     eventDelegation.on({
-      handler,
-      targetSelector,
-      eventName: 'click.btn--delegated',
-      delegatedTarget: document.body
+      events: 'click.delegated',
+      elements: '.section--with-ned',
+      targets: '.btn--delegated',
+      handler
     });
+    const insideTarget = document.querySelectorAll(`.section--with-ned .btn--delegated span`)[0];
+
     insideTarget.dispatchEvent(clickEvent);
     expect(handler).toHaveBeenCalledTimes(1);
   });
 
-  test('triggering direct event', () => {
-    const targetSelector = '.btn--direct';
-    const insideTarget = document.querySelector(`${targetSelector} span`);
-
+  it('should call direct event', () => {
     eventDelegation.on({
-      handler,
-      targetSelector,
-      eventName: 'click.btn--direct',
-      delegatedTarget: document.body
+      events: 'click.direct',
+      elements: '.btn--direct',
+      handler
     });
+    const insideTarget = document.querySelectorAll(`.section--with-ned .btn--direct span`)[0];
+
+    insideTarget.dispatchEvent(clickEvent);
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Testing delegated event on inserted element', () => {
+  beforeEach(testSetup);
+
+  it('should call delegated event', () => {
+    eventDelegation.on({
+      events: 'click.delegated',
+      elements: '.section--with-ned',
+      targets: '.btn--delegated',
+      handler
+    });
+
+    appendElement(complexCtas, document.querySelector('.section--with-ned'));
+
+    const insideTarget = document.querySelectorAll('.section--with-ned .btn--delegated span')[1];
     insideTarget.dispatchEvent(clickEvent);
     expect(handler).toHaveBeenCalledTimes(1);
   });
 
-  test('can be prevented', () => {
-    const delegatedTarget = document.querySelector('.form');
-    const insideTarget = delegatedTarget.querySelector(`.form__submit span`);
-    // const eventSpyer = { originalEvent: { preventDefault: () => {} } };
+  it('should NOT trigger direct event', () => {
+    eventDelegation.on({
+      events: 'click.direct',
+      elements: '.btn--direct',
+      handler
+    });
 
-    // jest.spyOn(eventSpyer.originalEvent, 'preventDefault');
+    appendElement(complexCtas, document.querySelector('.section--with-ned'));
 
-    const onFormSubmit = {
-      handler: (event) => {
-        handler();
-        console.log('onFormSubmit', event);
-      },
-      eventName: 'submit',
-      delegatedTarget: document.querySelector('.form')
-    };
-
-    const onFormSubmitClick = {
-      handler: (event) => {
-        eventPreventDefaultHandler();
-        event.originalEvent.preventDefault();
-      },
-      targetSelector: '.form__submit',
-      eventName: 'click.forms',
-      delegatedTarget: document.body
-    };
-
-    eventDelegation.on(onFormSubmit);
-    // eventDelegation.on(onFormSubmitClick);
-
+    const insideTarget = document.querySelectorAll(`.section--with-ned .btn--direct span`)[1];
     insideTarget.dispatchEvent(clickEvent);
-    // expect(eventPreventDefaultHandler).toHaveBeenCalledTimes(1);
-    expect(formSubmitHandler).toHaveBeenCalledTimes(0);
+    expect(handler).toHaveBeenCalledTimes(0);
   });
 });

@@ -1,6 +1,6 @@
 interface EventsItem {
-  delegatedTargetElement;
-  eventNamespace: string;
+  element;
+  eventName: string;
   handler;
 }
 
@@ -20,22 +20,24 @@ export default class EventManagerSingleton {
     return this;
   }
 
-  addEvent = (delegatedTargetElement, eventNamespace: string, event) => {
-    this.eventsMap.push({ delegatedTargetElement, eventNamespace, handler: event });
-    return event;
+  addEvent = (element, eventName, handler) => {
+    this.eventsMap.push({ element, eventName, handler });
+    return handler;
   };
 
-  removeEvents = (delegatedTargetElement, eventNamespace: string): boolean => {
-    const eventsRemoved = this.eventsMap.some((event) => event.eventNamespace === eventNamespace);
-    this.eventsMap.forEach((event, index) => {
-      if (event.delegatedTargetElement === delegatedTargetElement && event.eventNamespace === eventNamespace) {
-        delete this.eventsMap[index];
-      }
-    });
-
-    return eventsRemoved;
+  removeEvents = (element, eventName): boolean => {
+    const eventsRemoved = 0;
+    this.eventsMap = this.eventsMap.filter(
+      (event, index) =>
+        event.element === element && event.eventName === eventName && delete this.eventsMap[index] && eventsRemoved + 1
+    );
+    return !!eventsRemoved;
   };
 
-  getEvents = (eventNamespace: string = undefined): EventsItems =>
-    eventNamespace ? this.eventsMap.filter((event) => event.eventNamespace === eventNamespace) : this.eventsMap;
+  getEvents = (eventName = undefined): EventsItems =>
+    eventName ? this.eventsMap.filter((event) => event.eventName === eventName) : this.eventsMap;
+
+  clearEvents = () => {
+    this.eventsMap = [];
+  };
 }

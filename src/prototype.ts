@@ -7,7 +7,7 @@ class EventDelegationProtoype extends EventDelegation {
   }
 
   install = () => {
-    HTMLElement.prototype.on = this.on({});
+    // HTMLElement.prototype.on = this.on({});
   };
 }
 
