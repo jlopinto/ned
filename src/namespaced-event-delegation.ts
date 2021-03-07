@@ -2,7 +2,7 @@ import EventManager from './event-manager';
 
 interface EventLabels {
   events: string;
-  elements: string;
+  elements: string | HTMLElement | Window & typeof globalThis;
 }
 
 interface DelegatedEvent extends EventLabels {

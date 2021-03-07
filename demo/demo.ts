@@ -1,5 +1,6 @@
 import EventDelegation from '../src/index';
-const eventDelegation = new EventDelegation();
+
+const ned = new EventDelegation();
 
 const logEvent = (() => {
   const logs = [];
@@ -30,8 +31,7 @@ const logEvent = (() => {
   };
 })();
 
-window.addEventListener('DOMContentLoaded', function () {
-
+const demo = () => {
   const myDelegatedEvent = {
     targets: '.btn--ned',
     elements: '.container',
@@ -45,7 +45,7 @@ window.addEventListener('DOMContentLoaded', function () {
     elements: '.btn--direct',
     handler: (event) => {
       console.log(event);
-      const removed = eventDelegation.off({
+      const removed = ned.off({
         elements: event.delegatedTarget,
         events: 'click.btnDirect'
       });
@@ -94,15 +94,15 @@ window.addEventListener('DOMContentLoaded', function () {
     handler: (event) => {
       logEvent(event);
     }
-  }
-  eventDelegation.on(complexEvent);
-  eventDelegation.on(myDelegatedEvent);
-  eventDelegation.on(myDirectEvent);
-  eventDelegation.once(myDirectEventOnce);
-  eventDelegation.on(allBtnMousedown);
-  eventDelegation.on(allBtnMouseup);
+  };
+  ned.on(complexEvent);
+  ned.on(myDelegatedEvent);
+  ned.on(myDirectEvent);
+  ned.once(myDirectEventOnce);
+  ned.on(allBtnMousedown);
+  ned.on(allBtnMouseup);
 
-  eventDelegation.on({
+  ned.on({
     events: 'submit.myForm',
     elements: document.body,
     targets: '.myForm',
@@ -113,10 +113,12 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // eventDelegation.fire({
+  // ned.fire({
   //   element: '.btn--ned',
   //   eventName: 'click'
   // });
 
-  console.log(eventDelegation.getEvents());
-});
+  console.log(ned.getEvents());
+};
+
+ned.on({ events: 'DOMContentLoaded', elements: window, handler: demo });

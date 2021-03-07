@@ -1,0 +1,66 @@
+body {
+  background-color: #341f97;
+  color: white;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.col {
+  flex: 1 0 auto;
+  margin-left: 1rem;
+  margin-right: 1rem;
+  max-width: 100%;
+}
+
+table {
+  table-layout: fixed;
+  border-collapse: collapse;
+  background-color: #25166d;
+}
+
+th {
+  font-weight: 700;
+}
+
+th,
+td {
+  padding: 0.5rem 1rem;
+  text-align: left;
+  border: 4px solid #341f97;
+  border-left-width: 0;
+  border-right-width: 0;
+}
+
+.btn {
+  border: 1px solid #54a0ff;
+  background-color: transparent;
+  display: flex;
+  color: white;
+  padding: 0.5rem 1rem;
+  outline: 0;
+}
+
+.btn__icon {
+  margin-right: 0.5rem;
+}
+
+.fake-icon {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  background-color: #eee;
+  transform: rotateZ(45deg);
+}
+
+.click {
+  border-color: green;
+}
+
+.mousedown {
+  border-color: red;
+}
+/*# sourceMappingURL=index.f22293ac.css.map */
