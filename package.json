@@ -14,11 +14,11 @@
     "url": "https://github.com/jlopinto/ned.git"
   },
   "scripts": {
-    "serve": "parcel serve demo/index.html src/index.ts",
+    "serve": "parcel serve demo/index.html",
     "prebuild:website": "rm -rf dist",
     "prebuild:ned": "rm -rf lib",
     "build:website": "parcel build demo/index.html --no-source-maps --no-content-hash",
-    "build:ned": "microbundle --sourcemap false --output lib",
+    "build:ned": "microbundle --no-sourcemap --output lib",
     "build": "npm run build:ned && npm run build:website",
     "test": "jest",
     "lint": "eslint . --ext .ts"
