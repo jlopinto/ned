@@ -1,13 +1,13 @@
-import EventManager from './event-manager';
 interface EventLabels {
     events: string;
-    elements: string;
+    elements: string | HTMLElement;
 }
 interface DelegatedEvent extends EventLabels {
     handler: Function;
     targets?: string;
     once?: boolean;
 }
+import EventManager from './event-manager';
 export default class NamespacedEventDelegation extends EventManager {
     on: ({ events, elements, targets, handler, once }: DelegatedEvent) => void;
     once: ({ events, elements, targets, handler }: DelegatedEvent) => void;
